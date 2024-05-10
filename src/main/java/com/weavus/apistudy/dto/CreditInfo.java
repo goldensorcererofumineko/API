@@ -1,10 +1,12 @@
-package com.weavus.apistudy.credit.dto;
+package com.weavus.apistudy.dto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.*;
 
+//@DynamicUpdate
+@NoArgsConstructor
 @Entity
 @Getter
 @Setter

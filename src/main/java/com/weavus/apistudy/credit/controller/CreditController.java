@@ -1,15 +1,18 @@
 package com.weavus.apistudy.credit.controller;
 
-import com.weavus.apistudy.credit.repo.CreditoInfoRepo;
-import com.weavus.apistudy.credit.dto.CreditInfo;
+import com.weavus.apistudy.repo.CreditInfoRepo;
+import com.weavus.apistudy.dto.CreditInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class CreditController {
     @Autowired
-    private CreditoInfoRepo creditoInfoDao;
+    private CreditInfoRepo creditoInfoDao;
+    @Autowired
+    private CreditInfoRepo creditInfoRepo;
 
     @GetMapping("/")
     public String init() {
@@ -45,37 +48,21 @@ public class CreditController {
     }
 
     @PatchMapping("/payment/id/{id}/price/{price}")
-    public ResponseEntity<String> payment(@PathVariable String id,@PathVariable long price) {
+    public ResponseEntity<String> payment(@PathVariable String id, @PathVariable long price) {
 
-        CreditInfo info = creditoInfoDao.findById(id).orElse(null);
+        CreditInfo info = creditInfoRepo.findById(id).orElse(null);
+
+        long updatedSiyoGaku = info.getSiyoGaku() + price;
 
         if(info.getGendoGaku() < info.getSiyoGaku() + price) {
-            return ResponseEntity.badRequest().body("失敗");
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("限度額が足りません。");
         } else {
-            CreditInfo creditInfo = new CreditInfo();
-            creditInfo.setCreditNumber(id);
-            creditInfo.setSiyoGaku(info.getSiyoGaku() + price);
-            creditoInfoDao.save(creditInfo);
-            return ResponseEntity.ok("支払い完了");
+            info.setSiyoGaku(updatedSiyoGaku);
+
+            creditInfoRepo.save(info);
+            return ResponseEntity.status(HttpStatus.OK).body("決済完了。");
+
         }
 
     }
-//    @PatchMapping("/payment/id/{id}/price/{price}")
-//    public ResponseEntity<String> payment(@PathVariable String id, @PathVariable long price) {
-//
-//        CreditInfo info = creditInfoDao.findById(id).orElse(null);
-//
-//        if(info.getGendoGaku() < info.getSiyoGaku() + price) {
-//            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("限度額が足りません。");
-//        } else {
-//            CreditInfo creditInfo = new CreditInfo();
-//            creditInfo.setCreditNo(id);
-//            creditInfo.setSiyoGaku(info.getSiyoGaku() + price);
-//
-//            creditInfoDao.save(creditInfo);
-//            return ResponseEntity.status(HttpStatus.OK).body("限度額が足りません。");
-//
-//        }
-//
-//    }
 }
